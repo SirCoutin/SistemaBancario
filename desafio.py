@@ -17,20 +17,27 @@ def Saque(saldo, valor, extrato, numero_saques):
         return saldo, numero_saques, extrato
 
 def Extrato(extrato):
+
     num_op = 0
     print("Seu Extrato: ")
     for extratos in extrato:
         num_op += 1
         print(f"{num_op}: {extratos}")
 
-def criar_usuario(usuarios, nome, data_nascimento, cpf, endereco):
-    
-    usuarios[nome] = {'Data Nascimento': data_nascimento, 
-                      'CPF': cpf, 
-                      'Endereço': endereco}
-    
+def criar_usuario(usuarios, nome, fix_cpf, data_nascimento, endereco):
+    usuarios.append({"nome": nome, "data_nascimento": data_nascimento, "cpf": fix_cpf, "endereco": endereco})
     return usuarios
 
+def check_cpf_in_usuarios(usuarios, fix_cpf):
+    for user in usuarios:
+        if user["cpf"] == fix_cpf:
+            return user
+        else:
+            return None
+        
+def criar_conta(usuario, numero_contas_novas, contas_correntes, agencia):
+    contas_correntes.append({"nome": usuario["nome"], "cpf": usuario["cpf"], "agencia": "0001", "numero_conta_nova": numero_contas_novas})
+    return contas_correntes
 
 def Main():
 
@@ -40,6 +47,7 @@ def Main():
     [s] Sacar
     [e] Extrato
     [u] Criar Usuário
+    [c] Criar Conta Corrente
     [q] Sair
 
     => """
@@ -49,8 +57,10 @@ def Main():
     extrato = []
     numero_saques = 0
     LIMITE_SAQUES = 3
+    agencia = "0001"
     numero_contas_novas = 0
-    usuarios = {}
+    usuarios = []
+    contas_correntes = []
 
     while True:
 
@@ -90,13 +100,29 @@ def Main():
             data_nascimento = input("Informe sua data de nascimento (no padrão dd/mm/yy): ")
             cpf = input("Informe seu CPF: ")
             endereco = input("Informe seu endereço: ")
-            
-            if cpf in usuarios.get(nome, {}).get(cpf, {}):
-                print("CPF já cadastrado!")
-            else:
-               usuarios = criar_usuario(usuarios, nome, data_nascimento, cpf, endereco)
 
-            print(usuarios)
+            fix_cpf = cpf.replace(".", "").replace("-", "")
+            existe_cpf = check_cpf_in_usuarios(usuarios, fix_cpf)
+
+            if existe_cpf:
+                print(f"Usuário com CPF: {fix_cpf} já cadastrado!")
+            else:
+                criar_usuario(usuarios, nome, fix_cpf, data_nascimento, endereco)
+
+            print(f"\n{usuarios}")
+
+        elif opcao == "c":
+            cpf = input("Digite o seu CPF para criar sua nova conta: ")
+            fix_cpf = cpf.replace(".", "").replace("-", "")
+
+            usuario = check_cpf_in_usuarios(usuarios, fix_cpf)
+
+            if usuario:
+                numero_contas_novas += 1
+                criar_conta(usuario, numero_contas_novas, contas_correntes, agencia)
+                print(contas_correntes)
+            else:
+                print(f"Usuário com CPF {fix_cpf} não cadastrado! Cadastre-se no nosso Banco!")
 
         elif opcao == "q":
             break
